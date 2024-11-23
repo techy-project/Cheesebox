@@ -145,6 +145,14 @@ const std::map<std::string, std::string> CheeseBox::commandHelp = {
     {"version",
         "Show Distrobox version information\n"
         "\nUsage: cheesebox version\n"
+    },
+    {"export-app",
+        "Export an application from a container\n"
+        "\nUsage: cheesebox export-app <container> <binary>\n"
+        "\nExample:\n"
+        "  cheesebox export-app dev-container firefox\n"
+        "\nThis will create a desktop entry for the application\n"
+        "that can be launched from your desktop environment.\n"
     }
 };
 
@@ -159,4 +167,25 @@ void CheeseBox::showCommandHelp(const std::string& command) {
 
 std::vector<std::string> CheeseBox::getSupportedDistros() {
     return supportedDistros;
+}
+
+bool CheeseBox::exportApp(const std::string& containerName, const std::string& binaryName) {
+    // Export the application
+    std::string exportCmd = "distrobox-enter " + containerName + 
+                           " -- distrobox-export --app " + binaryName + 
+                           " --export-label \"(on " + containerName + ")\"";
+    
+    if (system(exportCmd.c_str()) != 0) {
+        return false;
+    }
+
+    // Update desktop database
+    std::string updateCmd = "update-desktop-database ~/.local/share/applications";
+    system(updateCmd.c_str());
+
+    // Optional: Also update icon cache
+    std::string iconCmd = "gtk-update-icon-cache -f -t ~/.local/share/icons/hicolor";
+    system(iconCmd.c_str());
+
+    return true;
 } 

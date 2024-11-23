@@ -10,7 +10,8 @@ void printUsage() {
               << "  start <name>            Start a container\n"
               << "  stop <name>             Stop a container\n"
               << "  list                    List all containers\n"
-              << "  version                 Show Distrobox version\n"
+              << "  export-app <name> <binary>  Export an application from container\n"
+              << "  version                 Show Cheesebox version\n"
               << "  help <command>          Show help for a specific command\n"
               << "\nFor more information about a command:\n"
               << "  cheesebox help <command>\n";
@@ -57,8 +58,13 @@ int main(int argc, char* argv[]) {
                 std::cout << container << std::endl;
             }
         }
+        else if (command == "export-app" && argc == 4) {
+            if (cb.exportApp(argv[2], argv[3])) {
+                std::cout << "Application exported successfully\n";
+            }
+        }
         else if (command == "version") {
-            std::cout << cb.getDistroboxVersion();
+            std::cout << "Cheesebox version 0.1.2\n";
         }
         else {
             printUsage();
