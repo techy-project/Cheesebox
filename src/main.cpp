@@ -10,9 +10,12 @@ void printUsage() {
               << "  start <name>            Start a container\n"
               << "  stop <name>             Stop a container\n"
               << "  list                    List all containers\n"
-              << "  export-app <name> <binary>  Export an application from container\n"
+              << "  export-app <name> <app> Export an application from container\n"
               << "  version                 Show Cheesebox version\n"
-              << "  help <command>          Show help for a specific command\n"
+              << "  help [command]          Show help or command help for a specific command\n"
+              << "  export <container> <export-file>    Export container to file\n"
+              << "  import <export-file> <container-name>    Import container from file\n"
+              << "  clone <existing-container> <container-name>  Clone a container\n"
               << "\nFor more information about a command:\n"
               << "  cheesebox help <command>\n";
 }
@@ -64,7 +67,31 @@ int main(int argc, char* argv[]) {
             }
         }
         else if (command == "version") {
-            std::cout << "Cheesebox version 0.1.2\n";
+            std::cout << "Cheesebox version 0.1.2-beta2, a stable beta release\n";
+        }
+        else if (command == "export" && argc == 4) {
+            if (cb.exportContainer(argv[2], argv[3])) {
+                std::cout << "Container exported successfully to " << argv[3] << std::endl;
+            } else {
+                std::cerr << "Failed to export container" << std::endl;
+                return 1;
+            }
+        }
+        else if (command == "import" && argc == 4) {
+            if (cb.importContainer(argv[2], argv[3])) {
+                std::cout << "Container imported successfully" << std::endl;
+            } else {
+                std::cerr << "Failed to import container" << std::endl;
+                return 1;
+            }
+        }
+        else if (command == "clone" && argc == 4) {
+            if (cb.cloneContainer(argv[2], argv[3])) {
+                std::cout << "Container cloned successfully" << std::endl;
+            } else {
+                std::cerr << "Failed to clone container" << std::endl;
+                return 1;
+            }
         }
         else {
             printUsage();
