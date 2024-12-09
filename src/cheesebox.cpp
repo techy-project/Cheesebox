@@ -153,6 +153,33 @@ const std::map<std::string, std::string> CheeseBox::commandHelp = {
         "  cheesebox export-app dev-container firefox\n"
         "\nThis will create a desktop entry for the application\n"
         "that can be launched from your desktop environment.\n"
+    },
+    {"export",
+        "Export a container to a file\n"
+        "\nUsage: cheesebox export <container> <export-file>\n"
+        "\nArguments:\n"
+        "  container    Name of the container to export\n"
+        "  export-file  Path to save the exported container\n"
+        "\nExample:\n"
+        "  cheesebox export dev-container ./backup.tar\n"
+    },
+    {"import",
+        "Import a container from a file\n"
+        "\nUsage: cheesebox import <export-file> <container-name>\n"
+        "\nArguments:\n"
+        "  export-file    Path to the exported container file\n"
+        "  container-name Name for the imported container\n"
+        "\nExample:\n"
+        "  cheesebox import ./backup.tar my-restored-container\n"
+    },
+    {"clone",
+        "Clone an existing container\n"
+        "\nUsage: cheesebox clone <existing-container> <container-name>\n"
+        "\nArguments:\n"
+        "  existing-container  Name of the container to clone\n"
+        "  container-name     Name for the new cloned container\n"
+        "\nExample:\n"
+        "  cheesebox clone dev-container dev-container-backup\n"
     }
 };
 
@@ -188,4 +215,44 @@ bool CheeseBox::exportApp(const std::string& containerName, const std::string& b
     system(iconCmd.c_str());
 
     return true;
-} 
+}
+
+bool CheeseBox::exportContainer(const std::string& containerName, const std::string& exportPath) {
+    if (!containerExists(containerName)) {
+        std::cerr << "Container " << containerName << " does not exist." << std::endl;
+        return false;
+    }
+
+    std::string cmd = "podman container export " + containerName + " -o " + exportPath;
+    return executeCommand(cmd);
+}
+
+bool CheeseBox::importContainer(const std::string& exportPath, const std::string& containerName) {
+    // First import as an image
+    std::string importCmd = "podman import " + exportPath + " " + containerName + "-image";
+    if (!executeCommand(importCmd)) {
+        return false;
+    }
+
+    // Then create a Distrobox container using the imported image
+    std::string createCmd = "distrobox create --image " + containerName + "-image --name " + containerName;
+    return executeCommand(createCmd);
+}
+
+bool CheeseBox::cloneContainer(const std::string& sourceContainer, const std::string& newContainer) {
+    if (!containerExists(sourceContainer)) {
+        std::cerr << "Source container " << sourceContainer << " does not exist." << std::endl;
+        return false;
+    }
+
+    if (containerExists(newContainer)) {
+        std::cerr << "Container " << newContainer << " already exists." << std::endl;
+        return false;
+    }
+
+    std::cout << "Cloning container " << sourceContainer << " to " << newContainer << "...\n";
+    std::cout << "This may take a few minutes depending on the container size.\n";
+    
+    std::string cmd = "distrobox create --clone " + sourceContainer + " --name " + newContainer;
+    return executeCommand(cmd);
+}
