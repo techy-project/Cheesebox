@@ -18,9 +18,12 @@ public:
     bool stopContainer(const std::string& name);
     std::vector<std::string> listContainers();
     bool exportApp(const std::string& containerName, const std::string& binaryName);
+    bool exportContainer(const std::string& containerName, const std::string& exportPath);
+    bool importContainer(const std::string& exportPath, const std::string& containerName = "");
     void showCommandHelp(const std::string& command);
     std::vector<std::string> getSupportedDistros();
     std::string getDistroboxVersion();
+    bool cloneContainer(const std::string& sourceContainer, const std::string& newContainer);
 
 private:
     // Private helper methods
